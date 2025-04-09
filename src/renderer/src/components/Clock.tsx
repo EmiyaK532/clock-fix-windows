@@ -9,6 +9,8 @@ function Clock({ isAlwaysOnTop, onToggleAlwaysOnTop }: ClockProps): JSX.Element 
   const [time, setTime] = useState<string>('')
   const [date, setDate] = useState<string>('')
   const clockRef = useRef<HTMLDivElement>(null)
+  const [isAutoLaunch, setIsAutoLaunch] = useState<boolean>(false)
+  const [showSettings, setShowSettings] = useState<boolean>(false)
 
   // 用于跟踪调整大小和拖动
   const [isDragging, setIsDragging] = useState<boolean>(false)
@@ -38,6 +40,22 @@ function Clock({ isAlwaysOnTop, onToggleAlwaysOnTop }: ClockProps): JSX.Element 
     // 组件卸载时清理监听器
     return cleanup
   }, [isAlwaysOnTop, onToggleAlwaysOnTop])
+
+  // 监听主进程发来的自动启动状态变化
+  useEffect(() => {
+    // 注册事件监听器
+    const cleanup = window.api.onAutoLaunchChanged((value) => {
+      setIsAutoLaunch(value)
+    })
+
+    // 获取初始自动启动状态
+    window.api.getAutoLaunch().then((value) => {
+      setIsAutoLaunch(value)
+    })
+
+    // 组件卸载时清理监听器
+    return cleanup
+  }, [])
 
   useEffect(() => {
     // 更新时间的函数
@@ -165,6 +183,18 @@ function Clock({ isAlwaysOnTop, onToggleAlwaysOnTop }: ClockProps): JSX.Element 
     // 状态更新通过onAlwaysOnTopChanged事件完成，不在这里直接更新
   }
 
+  // 处理自动启动切换
+  const handleAutoLaunchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.checked
+    window.api.toggleAutoLaunch(value)
+    // 状态更新通过onAutoLaunchChanged事件完成，不在这里直接更新
+  }
+
+  // 切换设置面板
+  const toggleSettings = (): void => {
+    setShowSettings(!showSettings)
+  }
+
   return (
     <div
       ref={clockRef}
@@ -184,17 +214,44 @@ function Clock({ isAlwaysOnTop, onToggleAlwaysOnTop }: ClockProps): JSX.Element 
         {date}
       </div>
 
-      <div className="mt-2 no-drag">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isAlwaysOnTop}
-            onChange={handleAlwaysOnTopChange}
-            className="form-checkbox h-4 w-4 text-blue-500"
-          />
-          <span className="ml-2 text-xs">始终置顶</span>
-        </label>
+      {/* 设置按钮 */}
+      <div className="absolute top-1 right-1 no-drag">
+        <button
+          onClick={toggleSettings}
+          className="text-white opacity-60 hover:opacity-100 text-xs"
+        >
+          ⚙️
+        </button>
       </div>
+
+      {/* 设置面板 */}
+      {showSettings && (
+        <div className="settings-panel absolute top-0 right-0 p-2 bg-black/80 rounded-md no-drag mt-6 mr-1 z-20">
+          <div className="mb-2">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAlwaysOnTop}
+                onChange={handleAlwaysOnTopChange}
+                className="form-checkbox h-4 w-4 text-blue-500"
+              />
+              <span className="ml-2 text-xs">始终置顶</span>
+            </label>
+          </div>
+
+          <div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAutoLaunch}
+                onChange={handleAutoLaunchChange}
+                className="form-checkbox h-4 w-4 text-blue-500"
+              />
+              <span className="ml-2 text-xs">开机自启动</span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* 调整大小的手柄 */}
       <div

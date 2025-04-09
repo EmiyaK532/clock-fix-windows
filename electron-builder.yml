@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: clock-fix-windows
+productName: 桌面时钟
 directories:
   buildResources: build
 files:
@@ -12,12 +12,25 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: clock-fix-windows
+  executableName: 桌面时钟
+  icon: build/icon.ico # 确保有一个图标文件
+  # 打包成target的几种格式
+  target:
+    - target: nsis
+      arch:
+        - x64
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ClockTopFix-${version}.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  # 以下是简化的NSIS安装配置
+  oneClick: false # 不使用一键安装
+  allowToChangeInstallationDirectory: true # 允许用户选择安装位置
+  perMachine: false # 默认为当前用户安装，不是所有用户
+  allowElevation: true # 允许请求提升权限
+  runAfterFinish: true # 安装完成后运行应用
+  include: build/installer.nsh # 自定义NSIS脚本，用于添加开机自启动选项
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:

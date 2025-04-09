@@ -18,6 +18,22 @@ body {
   cursor: move;
 }
 
+/* 设置面板样式 */
+.settings-panel {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+}
+
+.settings-panel label {
+  transition: opacity 0.2s ease;
+}
+
+.settings-panel label:hover {
+  opacity: 0.9;
+}
+
 /* 为可调整大小添加样式 */
 .resize-handle {
   position: absolute;

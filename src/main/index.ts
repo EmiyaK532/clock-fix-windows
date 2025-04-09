@@ -5,6 +5,24 @@ import icon from '../../resources/icon.png?asset'
 
 let mainWindow: BrowserWindow | null = null
 
+// 设置自启动
+function setAutoLaunch(enable: boolean): void {
+  if (process.platform === 'win32') {
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      path: process.execPath
+    })
+  }
+}
+
+// 检查是否设置了自启动
+function isAutoLaunchEnabled(): boolean {
+  if (process.platform === 'win32') {
+    return app.getLoginItemSettings().openAtLogin
+  }
+  return false
+}
+
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -60,20 +78,18 @@ app.whenReady().then(() => {
   ipcMain.on('toggle-always-on-top', (_, value) => {
     if (!mainWindow) return
 
-    // 设置是否置顶
-    mainWindow.setAlwaysOnTop(value, 'screen-saver') // 使用screen-saver级别，这是最高级别的置顶
+    if (process.platform === 'win32') {
+      // 对Windows平台使用专门的处理函数
+      ensureWindowAlwaysOnTopForWindows(mainWindow, value)
+    } else {
+      // 非Windows平台使用标准方式
+      mainWindow.setAlwaysOnTop(value, 'screen-saver') // 使用screen-saver级别，这是最高级别的置顶
 
-    // 如果设置为置顶，确保窗口可见
-    if (value) {
-      // 在某些系统上需要先取消焦点再重新获取焦点以确保置顶生效
-      mainWindow.blur()
-      mainWindow.focus()
-
-      // 确保窗口在最前面
-      if (process.platform === 'win32') {
-        // Windows平台特殊处理
-        mainWindow.setAlwaysOnTop(false)
-        mainWindow.setAlwaysOnTop(value, 'screen-saver')
+      // 如果设置为置顶，确保窗口可见
+      if (value) {
+        // 在某些系统上需要先取消焦点再重新获取焦点以确保置顶生效
+        mainWindow.blur()
+        mainWindow.focus()
       }
     }
 
@@ -85,6 +101,18 @@ app.whenReady().then(() => {
   ipcMain.handle('get-always-on-top', () => {
     if (!mainWindow) return false
     return mainWindow.isAlwaysOnTop()
+  })
+
+  // 添加自动启动相关的IPC
+  ipcMain.on('toggle-auto-launch', (_, value) => {
+    setAutoLaunch(value)
+    if (mainWindow) {
+      mainWindow.webContents.send('auto-launch-changed', value)
+    }
+  })
+
+  ipcMain.handle('get-auto-launch', () => {
+    return isAutoLaunchEnabled()
   })
 
   createWindow()
@@ -107,3 +135,43 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+// Windows平台特殊处理置顶函数
+function ensureWindowAlwaysOnTopForWindows(window: BrowserWindow, value: boolean): void {
+  if (!window) return
+
+  if (value) {
+    // 先关闭置顶
+    window.setAlwaysOnTop(false)
+
+    // 设置多种级别的置顶尝试
+    const levels = ['screen-saver', 'always-on-top', 'pop-up-menu', 'floating']
+
+    // 尝试不同的置顶级别
+    let currentLevelIndex = 0
+
+    const tryNextLevel = () => {
+      if (currentLevelIndex < levels.length) {
+        const level = levels[currentLevelIndex] as any
+        window.setAlwaysOnTop(true, level)
+        window.show()
+        window.focus()
+
+        // 检查是否真的置顶
+        if (window.isAlwaysOnTop()) {
+          console.log(`置顶成功，使用级别: ${level}`)
+        } else {
+          // 如果没有成功，尝试下一个级别
+          currentLevelIndex++
+          setTimeout(tryNextLevel, 100)
+        }
+      }
+    }
+
+    // 开始尝试
+    tryNextLevel()
+  } else {
+    // 关闭置顶
+    window.setAlwaysOnTop(false)
+  }
+}

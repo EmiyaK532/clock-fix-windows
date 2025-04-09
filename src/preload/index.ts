@@ -22,6 +22,27 @@ const api = {
     return () => {
       ipcRenderer.removeListener('always-on-top-changed', listener)
     }
+  },
+
+  // 自动启动相关API
+  toggleAutoLaunch: (value: boolean): void => {
+    ipcRenderer.send('toggle-auto-launch', value)
+  },
+
+  // 获取自动启动状态
+  getAutoLaunch: (): Promise<boolean> => {
+    return ipcRenderer.invoke('get-auto-launch')
+  },
+
+  // 监听自动启动状态变化
+  onAutoLaunchChanged: (callback: (value: boolean) => void): (() => void) => {
+    const listener = (_: Electron.IpcRendererEvent, value: boolean) => callback(value)
+    ipcRenderer.on('auto-launch-changed', listener)
+
+    // 返回清理函数
+    return () => {
+      ipcRenderer.removeListener('auto-launch-changed', listener)
+    }
   }
 }
 
