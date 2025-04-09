@@ -1,0 +1,80 @@
+:root {
+  --ev-c-white: #ffffff;
+  --ev-c-black: #000000;
+  --ev-c-gray: #8e8e93;
+  --ev-c-text-1: rgba(60, 60, 60, 1);
+  --ev-c-text-2: rgba(60, 60, 60, 0.75);
+  --ev-c-text-3: rgba(60, 60, 60, 0.33);
+
+  --ev-c-gray-1: #f8f8f8;
+  --ev-c-gray-2: #f2f2f2;
+  --ev-c-gray-3: #ebebeb;
+  --ev-c-gray-soft: rgba(142, 142, 147, 0.1);
+
+  --ev-button-alt-border: var(--ev-c-gray-soft);
+  --ev-button-alt-text: var(--ev-c-text-2);
+  --ev-button-alt-bg: var(--ev-c-gray-soft);
+  --ev-button-alt-hover-border: var(--ev-c-gray-soft);
+  --ev-button-alt-hover-text: var(--ev-c-text-1);
+  --ev-button-alt-hover-bg: var(--ev-c-gray-soft);
+
+  --ev-c-brand: #18a058;
+  --ev-c-brand-light: #36ad6a;
+  --ev-c-brand-dark: #0c7a43;
+}
+
+:root {
+  --color-background: var(--ev-c-white);
+  --color-background-soft: var(--ev-c-gray-1);
+  --color-background-mute: var(--ev-c-gray-2);
+
+  --color-border: var(--ev-c-gray-2);
+  --color-border-hover: var(--ev-c-text-3);
+
+  --color-heading: var(--ev-c-text-1);
+  --color-text: var(--ev-c-text-1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  position: relative;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 允许窗口拖动 */
+.titlebar {
+  -webkit-app-region: drag;
+}
+
+/* 不可拖动的元素 */
+.titlebar button,
+input[type='checkbox'],
+input[type='radio'],
+.no-drag {
+  -webkit-app-region: no-drag;
+}
